@@ -119,7 +119,8 @@ class ADMIN
         if($otp == $_SESSION['OTP']){
             unset($_SESSION['OTP']);
 
-            $this->addAdmin($csrf_token, $username, $email, $password);
+            $status = "active";
+            $this->addAdmin($csrf_token, $username, $email, $password, $status);
 
             $subject = "VERIFICATION SUCCESS";
             $message = "
@@ -191,7 +192,6 @@ class ADMIN
             </html>";
 
             $this->send_email($email, $message, $subject, $this->smtp_email, $this->smtp_password);
-            echo "<script>alert('Thank You'); window.location.href='../../../';</script>";
 
             unset($_SESSION['verify_not_username']);
             unset($_SESSION['verify_not_email']);
@@ -205,7 +205,7 @@ class ADMIN
         }
     }
 
-    public function addAdmin($csrf_token, $username, $email, $password)
+    public function addAdmin($csrf_token, $username, $email, $password, $status)
     {
         $stmt = $this->runQuery("SELECT * FROM user WHERE email =:email");
         $stmt->execute(array(":email" => $email));
@@ -224,15 +224,16 @@ class ADMIN
         
         $hash_password = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $this->runQuery("INSERT INTO user (username, email, password) VALUES (:username, :email, :password)");
+        $stmt = $this->runQuery("INSERT INTO user (username, email, password, status) VALUES (:username, :email, :password, :status)");
         $exec = $stmt->execute(array(
             ":username" => $username,
             ":email" => $email,
-            ":password" => $hash_password
+            ":password" => $hash_password,
+            "status" => $status
         ));
 
         if($exec){
-            echo "<script>alert('Admin Added Successfully!');</script>";
+            echo "<script>alert('Admin Added Successfully!'); window.location.href='../../../';</script>";
         } else {
             echo "<script>alert('Error Adding Admin!'); window.location.href='../../../';</script>";
             exit;
